@@ -20,6 +20,7 @@ set ( SOURCE_ONE_WEEKEND
   src/main.cc
   src/vec3.h
   src/color.h
+  src/ray.h
 )
 
 # Executables
