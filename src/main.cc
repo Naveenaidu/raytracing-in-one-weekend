@@ -1,31 +1,14 @@
-#include <iostream>
-#include "color.h"
-#include "vec3.h"
-#include "ray.h"
+#include "rtweekend.h"
 
-// Check if the rays coming from the camera hits the sphere
-// Return: the point where the ray intersected with sphere
-double hit_sphere(const point3& center, double radius, const ray& r){
-    vec3 oc = center - r.origin();
-    auto a = dot (r.direction(), r.direction());
-    auto b = -2 * dot(r.direction(), oc);
-    auto c = dot(oc, oc) - radius * radius;
-    auto discriminant = b*b - 4*a*c;
-
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-b - std::sqrt(discriminant)) / (2.0 * a);
-    }
-}
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 
-color ray_color(const ray& r){
-    auto t = hit_sphere(point3(0,0,-1), 0.5, r);
-    if (t > 0.0) {
-        // we assume normal to be a unit vector
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
+color ray_color(const ray& r, const hittable& world){
+    hit_record rec;
+    if (world.hit(r, 0, infinity, rec)) {
+        return 0.5 * (rec.normal + color(1,1,1));
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -44,6 +27,13 @@ int main() {
     // width/height = 16/9
     int image_height = int(image_width / aspect_ration);
     image_height = (image_height < 1) ? 1 : image_height;
+
+    // World
+
+    hittable_list world;
+
+    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
+    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
     // Camera
     auto focal_length = 1.0;
@@ -75,7 +65,7 @@ int main() {
             auto ray_direction = pixel_center - camera_center;
             ray r(camera_center, ray_direction);
 
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(std::cout, pixel_color);
             
         }

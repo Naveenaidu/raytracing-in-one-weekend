@@ -23,6 +23,8 @@ set ( SOURCE_ONE_WEEKEND
   src/ray.h
   src/hittable.h
   src/sphere.h
+  src/hittable_list.h
+  src/rtweekend.h
 )
 
 # Executables

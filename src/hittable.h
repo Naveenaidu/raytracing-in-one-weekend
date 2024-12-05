@@ -8,6 +8,13 @@ class hit_record {
         point3 p; // point  vector, where the ray intersect with sphere
         vec3 normal; // the normal vector at the intersection point
         double t; // the point on the ray
+
+        bool front_face;
+
+        void set_face_normal(const ray& r, const vec3& outward_normal) {
+            front_face = dot (r.direction(), outward_normal) < 0;
+            normal = front_face ? outward_normal : - outward_normal;
+        }
 };
 
 class hittable {
