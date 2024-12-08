@@ -5,12 +5,12 @@
 #include "vec3.h"
 
 class sphere : public hittable {
-    private:
+    public:
         point3 center;
         double radius;
 
     public:
-        sphere(const point3&, double radius) : center(center), radius(std::fmax(0, radius)) {}
+        sphere(const point3& center, double radius) : center(center), radius(std::fmax(0, radius)) {}
 
         bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
             vec3 oc = center - r.origin();
@@ -24,18 +24,25 @@ class sphere : public hittable {
         
             auto sqrtd = std::sqrt(discriminant);
 
-            // Find the nearest root that lies in the acceptable range.
+            
             // root: Solving this equation, gives the points where the ray hit the sphere
             auto root = (h - sqrtd) / a;
-            if (root <= ray_tmin || ray_tmax <= root) {
-                root = (h + sqrtd) / a;
-                if (root <= ray_tmin || ray_tmax <= root)
-                    return false;
+            if (root < ray_tmin || ray_tmax < root){
+                return false;
             }
+
+            // ASK: Not sure why book recommends this
+            // if (root <= ray_tmin || ray_tmax <= root) {
+            //     root = (h + sqrtd) / a;
+            //     if (root <= ray_tmin || ray_tmax <= root)
+            //         return false;
+            // }
 
             rec.t = root;
             rec.p = r.at(rec.t);
             rec.normal = (rec.p - center) / radius;
+
+            return true;
 
         }
 };

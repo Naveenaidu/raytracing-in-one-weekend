@@ -2,30 +2,36 @@
 #include "color.h"
 #include "vec3.h"
 #include "ray.h"
+#include "sphere.h"
+#include "rtweekend.h"
 
-// Check if the rays coming from the camera hits the sphere
-// Return: the point where the ray intersected with sphere
-double hit_sphere(const point3& center, double radius, const ray& r){
-    vec3 oc = center - r.origin();
-    auto a = dot (r.direction(), r.direction());
-    auto b = -2 * dot(r.direction(), oc);
-    auto c = dot(oc, oc) - radius * radius;
-    auto discriminant = b*b - 4*a*c;
+#include <vector>
+#include <memory>
 
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-b - std::sqrt(discriminant)) / (2.0 * a);
+using std::make_shared;
+using std::shared_ptr;
+
+
+color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world){
+
+    hit_record rec;
+    bool hit_anything = false;
+    double closest_hit_so_far = infinity;
+    
+    // For each ray, we will loop through all the objects and see the closest object.
+    // We only color the ray to the closest pixel.
+    for (const auto& object: world){
+        hit_record temp_rec;
+        if(object->hit(r, 0, closest_hit_so_far, temp_rec)){
+            hit_anything = true;
+            closest_hit_so_far = temp_rec.t;
+            rec = temp_rec;
+        }
     }
-}
 
-
-color ray_color(const ray& r){
-    auto t = hit_sphere(point3(0,0,-1), 0.5, r);
-    if (t > 0.0) {
-        // we assume normal to be a unit vector
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
+    if (hit_anything) {
+        vec3 N = unit_vector(r.at(rec.t) - vec3(0,0,-1));
+        return 0.5*(rec.normal + color(1,1,1));
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -63,8 +69,13 @@ int main() {
     auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
     auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-    // Render
+    // Create a world of spheres
+    std::vector<shared_ptr<sphere>> world;
+    world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5));
+    world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
+
+    // Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
     for (int j = 0; j < image_height; j++) {
@@ -75,7 +86,7 @@ int main() {
             auto ray_direction = pixel_center - camera_center;
             ray r(camera_center, ray_direction);
 
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(std::cout, pixel_color);
             
         }
