@@ -12,7 +12,12 @@ using std::make_shared;
 using std::shared_ptr;
 
 
-color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world){
+color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world, int depth){
+
+    if (depth <=0)
+        // If we have exhausted the depht limit, ignore that ray
+        // We ignore, because those rays are complicated to light/render
+        return color(0.0, 0.0, 0.0); 
 
     hit_record rec;
     bool hit_anything = false;
@@ -34,7 +39,7 @@ color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world){
         auto direction = random_on_hemisphere(rec.normal);
         // We want to return 50% of the color on the bounce, this should give us a grey
         // object
-        return 0.5*(ray_color(ray(rec.p, direction), world));
+        return 0.5*(ray_color(ray(rec.p, direction), world, depth-1));
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -102,6 +107,9 @@ int main() {
     int samples_per_pixel = 10;
     double pixel_samples_scale = 1.0 / samples_per_pixel;
 
+    // Limit the number of reflection rays
+    int max_reflected_rays = 10;
+
     // Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
@@ -113,7 +121,7 @@ int main() {
 
             for(int sample = 0; sample < samples_per_pixel; sample++){
                 ray r = get_ray(i, j, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center);
-                pixel_color = pixel_color + ray_color(r, world);
+                pixel_color = pixel_color + ray_color(r, world, max_reflected_rays);
             }
             write_color(std::cout, pixel_samples_scale * pixel_color);
         }
