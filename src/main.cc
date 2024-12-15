@@ -39,10 +39,29 @@ color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world){
     return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
 }
 
+// This fetches an offset, that we can use to create the sample square around the pixel center
+vec3 sample_square_offset() {
+    // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+    return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+}
+
+ray get_ray(int i, int j, vec3 pixel00_loc, vec3 pixel_delta_u, vec3 pixel_delta_v, point3 center) {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        auto offset = sample_square_offset();
+        auto pixel_sample = pixel00_loc
+                          + ((i + offset.x()) * pixel_delta_u)
+                          + ((j + offset.y()) * pixel_delta_v);
+        auto ray_origin = center;
+        auto ray_direction = pixel_sample - ray_origin;
+
+        return ray(ray_origin, ray_direction);
+}
+
 int main() {
 
     // Image
-
     auto aspect_ration = 16.0 / 9.0;
     int image_width = 400;
 
@@ -65,6 +84,8 @@ int main() {
     auto pixel_delta_u = viewport_u / image_width;
     auto pixel_delta_v = viewport_v / image_height;
 
+    
+
     // Calculate the location of the upper left pixel
     auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
     auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
@@ -74,6 +95,9 @@ int main() {
     world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5));
     world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
+    // Number of sample rays for anti-aliasing
+    int samples_per_pixel = 10;
+    double pixel_samples_scale = 1.0 / samples_per_pixel;
 
     // Render
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -82,14 +106,15 @@ int main() {
         std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
         for (int i = 0; i < image_width; i++) {
             auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-            // ASK: Why do we need ray_direction
-            auto ray_direction = pixel_center - camera_center;
-            ray r(camera_center, ray_direction);
+            color pixel_color(0, 0, 0);
 
-            color pixel_color = ray_color(r, world);
-            write_color(std::cout, pixel_color);
-            
+            for(int sample = 0; sample < samples_per_pixel; sample++){
+                ray r = get_ray(i, j, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center);
+                pixel_color = pixel_color + ray_color(r, world);
+            }
+            write_color(std::cout, pixel_samples_scale * pixel_color);
         }
     }
     std::clog << "\rDone.           \n";
 }
+
