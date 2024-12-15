@@ -10,6 +10,7 @@ class hit_record {
         double t; // the point on the ray
 
         color attenuation;
+        ray scattered; // the scattered ray
 };
 
 class hittable {

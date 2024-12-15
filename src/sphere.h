@@ -42,7 +42,11 @@ class sphere : public hittable {
             rec.t = root;
             rec.p = r.at(rec.t);
             rec.normal = (rec.p - center) / radius;
+            
             rec.attenuation = albedo;
+            // auto direction = rec.normal + random_unit_vector();
+            auto direction = reflect(r.direction(), rec.normal);
+            rec.scattered = ray(rec.p, direction);
 
             return true;
 
