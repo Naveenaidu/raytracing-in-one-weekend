@@ -18,6 +18,11 @@ inline double linear_to_gamma(double linear_component)
     return std::sqrt(linear_component);
 }
 
+double clamp(double x, double min, double max)  {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x;
+}
 
 void write_color(std::ostream& out, const color& pixel_color) {
     auto r = pixel_color.x();
@@ -33,9 +38,11 @@ void write_color(std::ostream& out, const color& pixel_color) {
     // Translate the [0,1] component values to the byte range [0,255].
     // The PPM image we create is a 256*256. Translating the values to
     // that range helps us define the intensity of each color.
-    int rbyte = int(255.999 * r);
-    int gbyte = int(255.999 * g);
-    int bbyte = int(255.999 * b);
+    double clamp_min = 0.000;
+    double clamp_max = 0.999;
+    int rbyte = int(256 * clamp(r, clamp_min, clamp_max));
+    int gbyte = int(256 * clamp(g, clamp_min, clamp_max));
+    int bbyte = int(256 * clamp(b, clamp_min, clamp_max));
 
     // Write out the pixel color components
     out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
