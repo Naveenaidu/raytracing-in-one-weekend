@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "rtweekend.h"
+
 // A vector class that will store coordinates(point3) or the values of color
 class vec3  {
     public:
@@ -45,6 +47,19 @@ class vec3  {
         double length_squared() const {
             return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
         }
+
+        static vec3 random() {
+            return vec3(random_double(), random_double(), random_double());
+        }   
+
+        static vec3 random(double min, double max) {
+            return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+        }
+
+        
+
+        
+
 };
 
 // point3 is just a type alias for vec3, but useful for geometric clarity in the code
@@ -101,5 +116,27 @@ inline vec3 cross(const vec3& u, const vec3& v) {
 inline vec3 unit_vector(const vec3& v) {
     return v / v.length();
 }
+
+inline vec3 random_unit_vector(){
+    while(true){
+        // Pick a random point inside the cube enclosing the unit sphere (that is, where x, y, and z are all in the range [−1,+1])
+        auto p = vec3::random(-1, 1);
+        auto p_lensq = p.length_squared();
+        if ( p_lensq <= 1) {
+            return p / p.length();
+        }
+
+    }
+}
+
+// Return back the vector on the correct hemisphere
+inline vec3 random_on_hemisphere(const vec3& normal){
+    auto unit_vector = random_unit_vector();
+    if (dot(normal, unit_vector) >= 0) 
+        return unit_vector;
+    else
+        return -unit_vector;
+}
+
 
 #endif
