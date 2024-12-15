@@ -36,7 +36,7 @@ color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world, int d
 
     if (hit_anything) {
         
-        auto direction = random_on_hemisphere(rec.normal);
+        auto direction = rec.normal + random_unit_vector();
         // We want to return 50% of the color on the bounce, this should give us a grey
         // object
         return 0.5*(ray_color(ray(rec.p, direction), world, depth-1));
