@@ -8,9 +8,10 @@ class sphere : public hittable {
     public:
         point3 center;
         double radius;
+        color albedo; // fraction of sunlight that is reflected
 
     public:
-        sphere(const point3& center, double radius) : center(center), radius(std::fmax(0, radius)) {}
+        sphere(const point3& center, double radius, color albedo) : center(center), radius(std::fmax(0, radius)), albedo(albedo) {}
 
         bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
             vec3 oc = center - r.origin();
@@ -41,6 +42,7 @@ class sphere : public hittable {
             rec.t = root;
             rec.p = r.at(rec.t);
             rec.normal = (rec.p - center) / radius;
+            rec.attenuation = albedo;
 
             return true;
 

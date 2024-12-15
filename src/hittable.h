@@ -8,6 +8,8 @@ class hit_record {
         point3 p; // point  vector, where the ray intersect with sphere
         vec3 normal; // the normal vector at the intersection point
         double t; // the point on the ray
+
+        color attenuation;
 };
 
 class hittable {

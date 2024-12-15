@@ -39,7 +39,7 @@ color ray_color(const ray& r, const std::vector<shared_ptr<sphere>> world, int d
         auto direction = rec.normal + random_unit_vector();
         // We want to return 50% of the color on the bounce, this should give us a grey
         // object
-        return 0.5*(ray_color(ray(rec.p, direction), world, depth-1));
+        return rec.attenuation*(ray_color(ray(rec.p, direction), world, depth-1));
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -100,11 +100,11 @@ int main() {
 
     // Create a world of spheres
     std::vector<shared_ptr<sphere>> world;
-    // world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5, color(0.7, 0.2, 0.1)));
-    // world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100, color(0.5, 0.5, 0.5)));
+    world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5, color(0.7, 0.2, 0.1)));
+    world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100, color(0.5, 0.5, 0.5)));
 
-    world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5));
-    world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100));
+    // world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5));
+    // world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
     // Number of sample rays for anti-aliasing
     int samples_per_pixel = 10;
