@@ -99,8 +99,10 @@ int main() {
 
     // Create a world of spheres
     std::vector<shared_ptr<sphere>> world;
-    world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5, color(0.7, 0.2, 0.1)));
-    world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100, color(0.5, 0.5, 0.5)));
+    world.push_back(make_shared<sphere>(point3(-1,0,-1), 0.5, color(0.2, 0.2, 0.1), true));
+    world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5, color(0.7, 0.2, 0.1), false));
+    world.push_back(make_shared<sphere>(point3(1,0,-1), 0.5, color(0.1, 0.2, 0.7), true));
+    world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100, color(0.5, 0.5, 0.5), false));
 
     // world.push_back(make_shared<sphere>(point3(0,0,-1), 0.5));
     // world.push_back(make_shared<sphere>(point3(0,-100.5,-1), 100));
